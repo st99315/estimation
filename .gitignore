@@ -1,0 +1,4 @@
+bin
+.vscode
+*.docx
+.DS_Store
