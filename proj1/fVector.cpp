@@ -152,13 +152,13 @@ void fVector::operator= (Float val)
 
 fVector& fVector::Swap(int i, int j)
 {
-    assert(i <= size - 1 || i > 0 ||
-           j <= size - 1 || j > 0);
-    
-    Float tmp = elem[i];
-    elem[i] = elem[j];
-    elem[j] = tmp;
+    if (i == j)
+        return *this;
 
+    int idx1 = i % size;
+    int idx2 = j % size;
+
+    Swap(elem[idx1], elem[idx2]);
     return *this;
 }
 
@@ -181,6 +181,23 @@ fVector operator+ (const fVector& left, const fVector& right)
         res.elem[i] = left.elem[i] + right.elem[i];
     }
     return res;
+}
+
+fVector operator+ (Float left, const fVector& right)
+{
+    int size = right.size;
+    fVector res(size);
+
+    for (int i = 0; i < size; i++)
+    {
+        res.elem[i] = left + right.elem[i];
+    }
+    return res;
+}
+
+fVector operator+ (const fVector& left, Float right)
+{
+    return right + left;
 }
 
 /* Binary minus */
@@ -252,11 +269,26 @@ fVector operator* (Float left, const fVector& right)
 
 fVector operator/ (const fVector& left, Float right)
 {
-    int size = left.size;
-    fVector res(size);
+    /* avoid division 0 */
+    assert(right != 0);
 
-    for (int i = 0; i < size; i++)
+    fVector res(left.size);
+
+    for (int i = 0; i < left.size; i++)
         res.elem[i] = left.elem[i] / right;
+    return res;
+}
+
+fVector operator/ (Float left, const fVector& right)
+{
+    fVector res(right.size);
+
+    for (int i = 0; i < right.size; i++)
+    {
+        /* avoid division 0 */
+        assert(right.elem[i] != 0);
+        res.elem[i] = left / right.elem[i];
+    }
     return res;
 }
 
@@ -269,6 +301,8 @@ fVector operator/ (const fVector& left, const fVector& right)
     fVector res(left.size);
     for (int i = 0; i < left.size; i++)
     {
+        /* avoid division 0 */
+        assert(right.elem[i] != 0);
         res.elem[i] = left.elem[i] / right.elem[i];
     }
     return res;
@@ -454,9 +488,16 @@ fVector DotMul(const fVector& v1, const fVector& v2)
 Float Std(const fVector& src)
 {
     return sqrt(Var(src));
-}  	
+}
 
 void ShowVector(const fVector& src, VecType Type /*= ColVec*/)
 {
     src.Show(Type);
+}
+
+void Swap( Float& a, Float& b)
+{
+    Float tmp = a;
+    a = b;
+    b = tmp;
 }

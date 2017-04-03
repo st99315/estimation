@@ -29,13 +29,15 @@ friend class fVector;
 // 1. A+B
 friend fMatrix  operator +  ( const fMatrix &, const fMatrix & );
 // 2. A-B
-friend fMatrix  operator -  ( const fMatrix &                 );
+friend fMatrix  operator -  ( const fMatrix &                  );
 friend fMatrix  operator -  ( const fMatrix &, const fMatrix & );
 // 3. c*A or A*c
-friend fMatrix  operator *  ( const fMatrix &,       Float    );
-friend fMatrix  operator *  (       Float  ,  const fMatrix & );
+friend fMatrix  operator *  ( const fMatrix &,       Float     );
+friend fMatrix  operator *  (       Float    , const fMatrix & );
 // 4. A/c
-friend fMatrix  operator /  ( const fMatrix &,       Float    );
+friend fMatrix  operator /  ( const fMatrix &,       Float     );
+//    c/A
+friend fMatrix  operator /  (       Float    , const fMatrix & );
 // 5. A*B
 friend fMatrix  operator *  ( const fMatrix &, const fMatrix & );
 friend fVector  operator *  ( const fMatrix &, const fVector & );

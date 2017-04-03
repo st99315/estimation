@@ -23,8 +23,8 @@ fMatrix::fMatrix(int n_rows /* = 0 */, int n_cols /* = 0 */): rows(n_rows), cols
 {
     if (rows > 0 && cols > 0)
     {
-        elem = new Float [rows * cols];
-        std::memset(elem, 0, sizeof(Float) * rows * cols);
+        elem = new Float [rows * cols] ();
+        // std::memset(elem, 0, sizeof(Float) * rows * cols);
         nMatCount++;
     }
 }
@@ -93,8 +93,13 @@ fMatrix::~fMatrix()
 void fMatrix::Show() const
 {
     using namespace std;
+    if (rows == 0 && cols == 0)
+    {
+        cout << "None" << endl;
+        return;
+    }
+
     cout << fixed << setprecision(SET_P);
-    
     for (int i = 0; i < rows; i++)
     {
         for (int j = 0; j < cols; j++)
@@ -208,6 +213,18 @@ fMatrix operator/ (const fMatrix& src, Float val)
     return res;
 }
 
+// c/A
+fMatrix operator/ (Float val, const fMatrix& src)
+{
+    fMatrix res(src.rows, src.cols);
+    for (int i = 0; i < src.rows; i++)
+        for (int j = 0; j < src.cols; j++)
+        {
+            int index = i * res.cols + j;
+            res.elem[index] = val / src.elem[index];
+        }
+    return res;
+}
 // 5. A*B
 fMatrix operator* (const fMatrix& left, const fMatrix& right)
 {
@@ -464,7 +481,8 @@ fMatrix Cofactor(const fMatrix& src)
 fMatrix Inverse(const fMatrix& src)
 {
     assert(src.rows == src.cols);
-    return Transp(Cofactor(src)) / Determinant(src);
+    fMatrix res(src);
+    return res.Inv();
 }
 
 // Computes Cholesky decomposition of a square matrix
@@ -531,16 +549,105 @@ fMatrix Cov(const fMatrix& src)
 fMatrix Cov(const fVector& src)
 {
     fVector subMean = src - Mean(src);
-    return Outer(subMean, subMean);
+    return Outer(subMean, subMean) / (src.Size() - 1);
 }
 
 /*-------------------------------------------------------------------------*
  *  MATRIX OPERATION FUNCTIONS                                             *
  *-------------------------------------------------------------------------*/
+// 7. Swap
+fMatrix& fMatrix::SwapRows(int i1, int i2)
+{
+    if (i1 == i2)
+        return *this;
+
+    int idx1 = i1 % rows;
+    int idx2 = i2 % rows;
+
+    for (int i = 0; i < cols; i++)
+    {
+        Swap(elem[idx1 * cols + i], elem[idx2 * cols + i]);
+    }
+    return *this;
+}
+
+fMatrix& fMatrix::SwapCols(int j1, int j2)
+{
+    if (j1 == j2)
+        return *this;
+
+    int idx1 = j1 % cols;
+    int idx2 = j2 % cols;
+
+    for (int i = 0; i < rows; i++)
+    {
+        Swap(elem[i * cols + idx1], elem[i * cols + idx2]);
+    }
+    return *this;
+}
+
+// 8. Inverse
+fMatrix& fMatrix::Inv()
+{
+    assert(rows == cols);
+    fMatrix eyes = Identity(rows);
+
+    /* Gauss-Jordan */
+    // control diagonal element
+    for (int i = 0; i < rows; i++)
+    {
+        // elem equal 0
+        if (elem[i * cols + i] == 0)
+        {
+            for (int j = i+1; j < rows; j++)
+            {
+                // elem is not 0 that below row of i 
+                if (elem[j * cols + i] != 0)
+                {
+                    // swap rows
+                    SwapRows(i, j);
+                    eyes.SwapRows(i, j);
+                    break;
+                }
+            }
+        }
+
+        // assert is there inverse matrix
+        assert(elem[i * cols + i] != 0);
+
+        // let diagonal element is 1, and divide elem of row
+        Float diag_elem = elem[i * cols + i];
+        for (int j = 0; j < cols; j++)
+        {
+            if (j >= i)
+                elem[i * cols + j] /= diag_elem;
+            eyes.elem[i * cols + j] /= diag_elem;
+        }
+
+        // 消去時, 所有的row都消去
+        for (int j = 0; j < rows; j++)
+        {
+            // other element in the same column
+            Float other_elem = elem[j * cols + i];
+            // 該行元素除了對角線元素, 其他減到0
+            if (i != j && other_elem != 0)
+            {
+                for (int k = 0; k < cols; k++)
+                {
+                    if (k >= i)
+                        elem[j * cols + k] -= elem[i * cols + k] * other_elem;
+                    eyes.elem[j * cols + k] -= eyes.elem[i * cols + k] * other_elem;
+                }
+            }
+        }
+    }
+    return *this = eyes;
+}
+
 fVector fMatrix::GetCol(int col) const
 {
     assert(col < cols);
-    
+
     Float* vecElem = GetBlock(0, col, rows, 1).elem;
     return fVector(vecElem, rows);
 }

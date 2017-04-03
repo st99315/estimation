@@ -45,6 +45,8 @@ class fVector
  *  FRIEND OPERATORS                                                       *
  *-------------------------------------------------------------------------*/
 friend fVector  operator +  ( const fVector &, const fVector & );
+friend fVector  operator +  (       Float    , const fVector & );
+friend fVector  operator +  ( const fVector &,       Float     );
 
 friend fVector  operator -  ( const fVector &, const fVector & ); // Binary minus.
 friend fVector  operator -  ( const fVector &                  ); // Unary minus.
@@ -55,6 +57,7 @@ friend fVector  operator *  ( const fVector &,        Float    );
 friend fVector  operator *  (       Float    , const fVector & );
 
 friend fVector  operator /  ( const fVector &,        Float    );
+friend fVector  operator /  (       Float    , const fVector & );
 friend fVector  operator /  ( const fVector &, const fVector & ); // Element-wise division
 
 friend Float    operator *  ( const fVector &, const fVector & ); // Inner-product between two vectors
@@ -127,5 +130,6 @@ private:
 
 /* Given default argument for friend function */
 extern void ShowVector( const fVector &, VecType Type = ColVec );
+extern void Swap( Float &, Float & );
 
 #endif // __VECTOR_INCLUDED__
