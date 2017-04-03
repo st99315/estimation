@@ -63,9 +63,9 @@ class CParamEstimator
     fMatrix* pMatVar;
     fVector* pVec;
 
-    fMatrix* LeastSquares(fVector* pfVecOptParam);
-    fMatrix* WeightedLeastSquares(fVector* pfVecOptParam);
-    fMatrix* MaximumLikelihood(fVector* pfVecOptParam);
+    fMatrix* LeastSquares(fVector* pOptParam);
+    fMatrix* WeightedLeastSquares(fVector* pOptParam);
+    fMatrix* MaximumLikelihood(fVector* pOptParam);
 
 public:
     CParamEstimator();

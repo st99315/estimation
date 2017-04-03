@@ -348,9 +348,13 @@ void test_ls()
     };
     double g_PX[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // estimates
 
+/* ------------------------------------------ */
+
     fMatrix MatH(20, 5, g_PH);
     fVector VecZ(20, g_PZ);
     fVector VecX(5, g_PX);
+
+/* --------------------- LS --------------------- */
 
     LS_Param Param = {&MatH, &VecZ, NULL};
 
@@ -365,11 +369,46 @@ void test_ls()
 
     cout << "Var:" << endl;
     MatErrVar->Show();
+
+/* --------------------- ML --------------------- */
+
+    const fVector& VecV  = VecZ - MatH * VecX;
+    fMatrix MatVv = Diag(Diag(Cov(VecV)));
+
+    fMatrix MatW = Diag(1 / (1 + DotMul(VecV, VecV)));
+
+    WLS_Param WLSParam = {&MatH, &MatW, &VecZ, &MatVv};
+    pe.SetMethodParameters(WLS, &WLSParam);
+    fMatrix *MatErrVarWLS = pe.SolveOptParam(&VecX);
+
+    cout << "WLS:" << endl;
+    cout << "Param:" << endl;
+    VecX.Show();
+
+    cout << "Var:" << endl;
+    if (MatErrVarWLS)
+        MatErrVarWLS->Show();
+
+/* --------------------- ML --------------------- */
+    // CParamEstimator pe;
+
+    ML_Param MLParam = {&MatH, &VecZ, &MatVv};
+    pe.SetMethodParameters(ML, &MLParam);
+    fMatrix *MatErrVarML = pe.SolveOptParam(&VecX);
+
+    cout << "ML:" << endl;
+    cout << "Param:" << endl;
+    VecX.Show();
+
+    cout << "Var:" << endl;
+    MatErrVarML->Show();
 }
+
 int main(int argc, char **argv)
 {
     // testVectorFuns();
     // testMatrixFuns();
     test_ls();
+
     return 0;
 }

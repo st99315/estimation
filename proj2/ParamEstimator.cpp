@@ -39,7 +39,7 @@ fMatrix* CParamEstimator::SolveOptParam(fVector* pfVecOptParam)
     }
 }
 
-fMatrix* CParamEstimator::LeastSquares(fVector* pfVecOptParam)
+fMatrix* CParamEstimator::LeastSquares(fVector* pOptParam)
 {
     // parse parameter
     LS_Param* param = (LS_Param *) pParam;
@@ -48,25 +48,57 @@ fMatrix* CParamEstimator::LeastSquares(fVector* pfVecOptParam)
     fVector vecZ  = *(param->pVec_Z);
 
     // compute Inverse(Ht * H)
-    fMatrix invHtH = Inverse(matHt * matH);
+    fMatrix invHtH = (matHt * matH).Inv();
 
-    // vector of parameter for output
-    *pfVecOptParam = invHtH * matHt * vecZ;
-    fVector v = vecZ - matH * *pfVecOptParam;
-    v = v - Mean(v);
-    fMatrix Vv = fMatrix(v) * fMatrix(v, RowVec) / (v.Size() - 1);
-    Vv = Diag(Diag(Vv));
+    // vector of parameter for output (p_ls)
+    *pOptParam = invHtH * matHt * vecZ;
+
+    fVector v = vecZ - matH * *pOptParam;
+    fMatrix Vv = Diag(Diag(Cov(v)));
 
     *pMatVar = invHtH * matHt * Vv * matH * invHtH;
     return pMatVar;
 }
 
-fMatrix* CParamEstimator::WeightedLeastSquares(fVector* pfVecOptParam)
+fMatrix* CParamEstimator::WeightedLeastSquares(fVector* pOptParam)
 {
+    // parse parameter
+    WLS_Param* param = (WLS_Param *) pParam;
+    fMatrix matH  = *(param->pMat_H);
+    fMatrix matHt = Transp(matH);
+    fMatrix matW  = *(param->pMat_W);
+    fVector vecZ  = *(param->pVec_Z);
+
+    // compute Inverse(Ht * H)
+    fMatrix invHtWH = (matHt * matW * matH).Inv();
+
+    // vector of parameter for output (p_ls)
+    *pOptParam = invHtWH * matHt * matW * vecZ;
+
+    // Optional	(for error-variance computing)
+    if (param->pMat_Vz)
+    {
+        fMatrix matVv = *(param->pMat_Vz);
+        *pMatVar = invHtWH * matHt * matW * matVv * matW * matH * invHtWH;
+        return pMatVar;
+    }
     return nullptr;
 }
 
-fMatrix* CParamEstimator::MaximumLikelihood(fVector* pfVecOptParam)
+fMatrix* CParamEstimator::MaximumLikelihood(fVector* pOptParam)
 {
-    return nullptr;
+    // parse parameter
+    ML_Param* param = (ML_Param *) pParam;
+    fMatrix matH  = *(param->pMat_H);
+    fMatrix matHt = Transp(matH);
+    fVector vecZ  = *(param->pVec_Z);
+    fMatrix matVz = *(param->pMat_Vz);
+
+    // compute Inverse
+    fMatrix matW = matVz.Inv();
+    fMatrix invHtWH = (matHt * matW * matH).Inv();
+
+    *pOptParam = invHtWH * matHt * matW * vecZ;
+    *pMatVar = invHtWH;
+    return pMatVar;
 }
