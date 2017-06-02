@@ -24,9 +24,13 @@ add_library(VecMat
 add_library(ParamEstimator
     ./proj2/ParamEstimator.cpp
 )
+add_library(MatchingPoints
+    ./proj2/MatchingPoints.cpp
+)
 
 # link libraries to executable
 target_link_libraries(test_func
     VecMat
     ParamEstimator
+    MatchingPoints
 )

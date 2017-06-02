@@ -60,6 +60,10 @@ class CParamEstimator
     ParamEstiMethod Method;
     void* pParam;
 
+    LS_Param  ls_param;
+    WLS_Param wls_param;
+    ML_Param  ml_param;
+
     fMatrix* pMatVar;
     fVector* pVec;
 
@@ -82,5 +86,9 @@ public:
     inline ParamEstiMethod GetParamEstiMethod(void) const          { return Method; }
     inline void* GetMethodParameters(ParamEstiMethod Method) const { return pParam; }
 };
+
+extern fMatrix generateTransMat(fMatrix& );
+extern fMatrix normalizeMat(fMatrix& , fMatrix& );
+extern void InitiHomographyEstimation(fMatrix& , fMatrix& , fMatrix& );
 
 #endif // __PARAM_ESTIMATOR_INCLUDED__

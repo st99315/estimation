@@ -1,6 +1,9 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include "fMatrix.h"
 #include "ParamEstimator.h"
+#include "MatchingPoints.h"
 
 using namespace std;
 
@@ -348,13 +351,13 @@ void test_ls()
     };
     double g_PX[5] = {0.0, 0.0, 0.0, 0.0, 0.0}; // estimates
 
-/* ------------------------------------------ */
+    /* ------------------------------------------ */
 
     fMatrix MatH(20, 5, g_PH);
     fVector VecZ(20, g_PZ);
     fVector VecX(5, g_PX);
 
-/* --------------------- LS --------------------- */
+    /* --------------------- LS --------------------- */
 
     LS_Param Param = {&MatH, &VecZ, NULL};
 
@@ -370,9 +373,9 @@ void test_ls()
     cout << "Var:" << endl;
     MatErrVar->Show();
 
-/* --------------------- ML --------------------- */
+    /* --------------------- ML --------------------- */
 
-    const fVector& VecV  = VecZ - MatH * VecX;
+    const fVector &VecV = VecZ - MatH * VecX;
     fMatrix MatVv = Diag(Diag(Cov(VecV)));
 
     fMatrix MatW = Diag(1 / (1 + DotMul(VecV, VecV)));
@@ -389,8 +392,7 @@ void test_ls()
     if (MatErrVarWLS)
         MatErrVarWLS->Show();
 
-/* --------------------- ML --------------------- */
-    // CParamEstimator pe;
+    /* --------------------- ML --------------------- */
 
     ML_Param MLParam = {&MatH, &VecZ, &MatVv};
     pe.SetMethodParameters(ML, &MLParam);
@@ -404,11 +406,76 @@ void test_ls()
     MatErrVarML->Show();
 }
 
+void saveDataFromMat(fMatrix& src, string filename)
+{
+    std::fstream fs;
+    fs.open(filename, std::fstream::out);
+    for (int i = 0; i < src.Rows(); i++)
+    {
+        fs << "[";
+        for (int j = 0; j < src.Cols(); j++)
+            fs << src.GetRow(i).Array()[j] << " ";
+        fs << "];\n\r";
+    }
+    fs.close();
+}
+
+void estimatePointsAndSave(fMatrix& src, fMatrix& tar, fMatrix& homo, string filename)
+{
+    // Making matrix for estimation
+    fMatrix matEsti(3, src.Rows());
+    fVector vecOnes(matEsti.Cols());
+    vecOnes = 1.0;
+
+    matEsti.SetRow(0, src.GetCol(0));
+    matEsti.SetRow(1, src.GetCol(1));
+    matEsti.SetRow(2, vecOnes);
+
+    // Calculation points of estimation
+    matEsti = homo * matEsti;
+
+    matEsti.SetRow(0, matEsti.GetRow(0) / matEsti.GetRow(2));
+    matEsti.SetRow(1, matEsti.GetRow(1) / matEsti.GetRow(2));
+    matEsti.SetRow(2, matEsti.GetRow(2) / matEsti.GetRow(2));
+
+    // Saving all of datas
+    auto tarT = Transp(tar);
+    saveDataFromMat(matEsti, filename + "Est.txt");
+    saveDataFromMat(tarT,    filename + "Tar.txt");
+}
+
+void test_initiHomographyEstimation()
+{
+    fMatrix matRef(g_Ref_X, g_nNumPoints, 2);
+    fMatrix matX1(g_x1, g_nNumPoints, 2);
+    fMatrix matX2(g_x2, g_nNumPoints, 2);
+    fMatrix matX3(g_x3, g_nNumPoints, 2);
+    fMatrix matX4(g_x4, g_nNumPoints, 2);
+    fMatrix matX5(g_x5, g_nNumPoints, 2);
+    fMatrix matHomo;
+
+    InitiHomographyEstimation(matRef, matX1, matHomo);
+    estimatePointsAndSave(matRef, matX1, matHomo, "X1");
+
+    InitiHomographyEstimation(matRef, matX2, matHomo);
+    estimatePointsAndSave(matRef, matX2, matHomo, "X2");
+
+    InitiHomographyEstimation(matRef, matX3, matHomo);
+    estimatePointsAndSave(matRef, matX3, matHomo, "X3");
+
+    InitiHomographyEstimation(matRef, matX4, matHomo);
+    estimatePointsAndSave(matRef, matX4, matHomo, "X4");
+
+    InitiHomographyEstimation(matRef, matX5, matHomo);
+    estimatePointsAndSave(matRef, matX5, matHomo, "X5");
+}
+
 int main(int argc, char **argv)
 {
     // testVectorFuns();
     // testMatrixFuns();
     test_ls();
+    test_initiHomographyEstimation();
 
     return 0;
 }
