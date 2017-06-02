@@ -12,6 +12,7 @@
  */
 
 #include "fMatrix.h"
+#include <algorithm>
 
 int fMatrix::nMatCount = 0;
 
@@ -525,8 +526,8 @@ fVector Mean(const fMatrix& src, VecType type)
     for (int i = 0; i < size; i++)
     {
         res(i) = type == ColVec ?
-            OneNorm(src.GetCol(i)) / size:
-            OneNorm(src.GetRow(i)) / size;
+            OneNorm(src.GetCol(i)) / src.rows:
+            OneNorm(src.GetRow(i)) / src.cols;
     }
     return res;
 }
@@ -693,30 +694,18 @@ void fMatrix::SetBlock(int row_start, int col_start, int row_size, int col_size,
         for (int j = 0; j < col_size; j++)
         {
             int idx = ((i + row_start) % rows) * cols + (j + col_start) % cols;
-            elem[idx] = src(i + j);
+            elem[idx] = src(i * col_size + j);
         }
 }
 
+void fMatrix::SetRow(int row, const fVector& src)
+{
+    assert(row >= 0 && row < this->rows);
 
+    for (int i = 0; i < src.Size(); i++)
+    {
+        if (i >= cols)    return;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        elem[row * cols + i] = src.Array()[i];
+    }
+}

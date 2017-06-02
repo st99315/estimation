@@ -115,18 +115,6 @@ void fVector::Show(VecType Type /* = ColVec */) const
     }
 }
 
-void fVector::SetSize(int size)
-{
-    assert(size > 0);
-
-    if (elem)
-    {
-        delete [] elem;
-    }
-    elem = new Float [size];
-    this->size = size;
-}
-
 fVector& fVector::operator= (const fVector& src)
 {
     if (size != src.size)
@@ -163,7 +151,32 @@ fVector& fVector::Swap(int i, int j)
 }
 
 // fVector fVector::GetBlock( int i, int j ) const
-// void fVector::SetBlock( int i, int j, const fVector & );
+void fVector::SetBlock(int start, const fVector& src)
+{
+    assert(start >= 0 && start < size);
+
+    for (int i = 0; i < src.size; i++)
+    {
+        int idx = start + i;
+        if (idx >= size)    return;
+
+        elem[idx] = src.elem[i];
+    }
+}
+
+void fVector::SetSize(int size)
+{
+    this->size = size;
+    Float* elem = new Float[size]();
+    for (int i = 0; i < size; i++)
+    {
+        if (i >= this->size)    break;
+        elem[i] = this->elem[i];
+    }
+    delete [] this->elem;
+    this->elem = elem;
+}
+
 
 /*-------------------------------------------------------------------------*
  *  FRIEND OPERATORS                                                       *

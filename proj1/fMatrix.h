@@ -17,7 +17,6 @@
 #define __MATRIX_INCLUDED__
 
 #include "fVector.h"
-#include <algorithm>
 
 class fMatrix
 {
@@ -45,10 +44,10 @@ friend fVector  operator *  ( const fVector &, const fMatrix & );
 
 friend fMatrix& operator += (       fMatrix &, const fMatrix & );
 friend fMatrix& operator -= (       fMatrix &, const fMatrix & );
-friend fMatrix& operator *= (       fMatrix &,       Float    );
+friend fMatrix& operator *= (       fMatrix &,       Float     );
 friend fMatrix& operator *= (       fMatrix &, const fMatrix & );
 friend fVector& operator *= (       fVector &, const fMatrix & );
-friend fMatrix& operator /= (       fMatrix &,       Float    );
+friend fMatrix& operator /= (       fMatrix &,       Float     );
 
 /*-------------------------------------------------------------------------*
  *  FRIEND FUNCTIONS                                                       *
@@ -120,9 +119,10 @@ public:
 
     fVector  GetCol( int col ) const;
     fVector  GetRow( int row ) const;
+    Float    GetElem ( int rol, int col ) const { return elem[rol * cols + col]; }
     fMatrix  GetBlock( int row_start, int col_start, int row_size, int col_size ) const;
 
-	void	Show() const;
+    void    Show() const;
 
     inline int Rows() const { return rows; }
     inline int Cols() const { return cols; }
@@ -132,17 +132,17 @@ private:
     int    cols; // Number of columns in the matrix.
     Float *elem; // Pointer to the actual data.
 
-	static int nMatCount;
+    static int nMatCount;
 };
 
-extern fVector Mean		( const fMatrix & , VecType type = ColVec );
-extern fMatrix Cholesky	( const fMatrix & , int lower = 1 );
+extern fVector Mean     ( const fMatrix & , VecType type = ColVec );
+extern fMatrix Cholesky ( const fMatrix & , int lower = 1 );
 
 /* no the line will get error */
 extern fMatrix Outer    ( const fVector &, const fVector & );
 extern fMatrix Identity ( int nSize );
 extern fMatrix Diag     ( const fVector & );
 extern fMatrix Diag     ( Float, Float, Float );
-extern fMatrix Cov		( const fVector & );
+extern fMatrix Cov      ( const fVector & );
 
 #endif // __MATRIX_INCLUDED__

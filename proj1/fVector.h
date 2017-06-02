@@ -112,7 +112,7 @@ public:
 
     fVector &Swap( int i, int j );
     fVector GetBlock( int i, int j ) const;
-    void    SetBlock( int i, int j, const fVector & );
+    void    SetBlock( int start, const fVector & );
 	void	Show(VecType Type = ColVec) const;
 
 public: // Inlined functions.

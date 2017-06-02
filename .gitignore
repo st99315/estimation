@@ -1,4 +1,6 @@
-bin
-.vscode
+.vscode/
+bin/
+ref_file/
+
 *.docx
 .DS_Store
